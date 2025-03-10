@@ -12,8 +12,6 @@ A modern, browser-based solution for developers to store, organize, and manage c
 
 [View Demo](https://nom-nom-hub.github.io/SnippetLive/) • [Report Bug](https://github.com/Nom-nom-hub/SnippetLive/issues) • [Request Feature](https://github.com/Nom-nom-hub/SnippetLive/issues)
 
-![Code Snippet Manager Preview](path-to-your-screenshot.png)
-
 </div>
 
 ## 🌟 Features
