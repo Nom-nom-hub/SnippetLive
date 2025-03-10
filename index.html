@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Snippet Manager</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/diff_match_patch/20121119/diff_match_patch.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-left">
+                <h1>Code Snippet Manager</h1>
+                <div class="stats">
+                    <span>Total Snippets: <strong id="statsTotal">0</strong></span>
+                    <span>Favorites: <strong id="statsFavorites">0</strong></span>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <!-- View Controls -->
+                <div class="action-group">
+                    <button class="btn btn-icon" id="toggleSidebar" title="Toggle Sidebar">
+                        <svg width="16" height="16" viewBox="0 0 16 16">
+                            <path fill="currentColor" d="M2 2h12v12H2V2zm1 1v10h10V3H3zm2 2h6v1H5V5zm0 2h6v1H5V7zm0 2h6v1H5V9z"/>
+                        </svg>
+                    </button>
+                    <button class="btn btn-icon" id="toggleTheme" title="Toggle Theme">
+                        <svg width="16" height="16" viewBox="0 0 16 16">
+                            <path fill="currentColor" d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 13V2a6 6 0 1 1 0 12z"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Editor Controls -->
+                <div class="action-group">
+                    <button class="btn btn-icon" id="formatCode" title="Format Code">
+                        <svg width="16" height="16" viewBox="0 0 16 16">
+                            <path fill="currentColor" d="M4.5 3h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1zm0 3h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1zm0 3h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1z"/>
+                        </svg>
+                    </button>
+                    <button class="btn btn-icon" id="undoChange" title="Undo">
+                        <svg width="16" height="16" viewBox="0 0 16 16">
+                            <path fill="currentColor" d="M8 3.5a4.5 4.5 0 0 0-4.5 4.5H1l4 4 4-4H6.5a1.5 1.5 0 1 1 1.5 1.5.5.5 0 0 0 0 1 2.5 2.5 0 1 0-2.5-2.5H2.5A5.5 5.5 0 1 1 8 13.5a.5.5 0 0 0 0-1A4.5 4.5 0 0 0 8 3.5z"/>
+                        </svg>
+                    </button>
+                    <button class="btn btn-icon" id="redoChange" title="Redo">
+                        <svg width="16" height="16" viewBox="0 0 16 16">
+                            <path fill="currentColor" d="M8 3.5a4.5 4.5 0 0 1 4.5 4.5H15l-4 4-4-4h2.5a1.5 1.5 0 1 0-1.5 1.5.5.5 0 0 1 0 1 2.5 2.5 0 1 1 2.5-2.5h2.5A5.5 5.5 0 1 0 8 13.5a.5.5 0 0 1 0-1A4.5 4.5 0 0 1 8 3.5z"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Settings -->
+                <div class="action-group">
+                    <div class="dropdown">
+                        <button class="btn btn-icon" title="Settings">
+                            <svg width="16" height="16" viewBox="0 0 16 16">
+                                <path fill="currentColor" d="M8 5a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/>
+                                <path fill="currentColor" d="M7.2 1.8a.5.5 0 0 1 .6 0l1.5 1.5a.5.5 0 0 1 0 .7l-1.5 1.5a.5.5 0 0 1-.7-.7L8.3 3.5 7.5 2.7a.5.5 0 0 1 0-.7l1.5-1.5a.5.5 0 0 1 .7 0z"/>
+                            </svg>
+                        </button>
+                        <div class="dropdown-content">
+                            <label><input type="checkbox" id="autoSave"> Auto-save</label>
+                            <label><input type="checkbox" id="lineNumbers"> Show line numbers</label>
+                            <label><input type="checkbox" id="wordWrap"> Word wrap</label>
+                            <label>Font Size: <input type="range" id="fontSize" min="12" max="24"></label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- New Snippet Button -->
+                <div class="action-group">
+                    <button class="btn btn-primary" onclick="openFullScreenEditor()">
+                        <svg width="16" height="16" viewBox="0 0 16 16" style="margin-right: 4px;">
+                            <path fill="currentColor" d="M8 2a1 1 0 0 1 1 1v4h4a1 1 0 0 1 0 2h-4v4a1 1 0 0 1-2 0V9H3a1 1 0 0 1 0-2h4V3a1 1 0 0 1 1-1z"/>
+                        </svg>
+                        New Snippet
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Remove this entire quick-actions section since it's redundant -->
+        <!-- <div class="quick-actions">
+            <button class="btn btn-icon" id="toggleTheme" title="Toggle Theme">🌙</button>
+            <button class="btn btn-icon" id="toggleSidebar" title="Toggle Sidebar">📑</button>
+            <div class="dropdown">
+                <button class="btn btn-icon" title="Settings">⚙️</button>
+                <div class="dropdown-content">
+                    <label><input type="checkbox" id="autoSave"> Auto-save</label>
+                    <label><input type="checkbox" id="lineNumbers"> Show line numbers</label>
+                    <label><input type="checkbox" id="wordWrap"> Word wrap</label>
+                    <label>Font Size: <input type="range" id="fontSize" min="12" max="24"></label>
+                </div>
+            </div>
+        </div> -->
+
+        <div class="main-grid">
+            <aside class="sidebar">
+                <div class="shortcut-reminder">
+                    <span class="keyboard-shortcut">Press Ctrl+N to add new snippet</span>
+                </div>
+                
+                <div class="import-export">
+                    <details class="feature-group">
+                        <summary>Import/Export</summary>
+                        <div class="import-export-options">
+                            <div class="export-options">
+                                <select id="exportFormat" class="compact-select">
+                                    <option value="json">JSON</option>
+                                    <option value="md">Markdown</option>
+                                    <option value="html">HTML</option>
+                                </select>
+                                <button onclick="exportSnippets()" class="btn btn-small">Export</button>
+                            </div>
+                            <div class="import-options">
+                                <button onclick="document.getElementById('importFile').click()" class="btn btn-small">Import File</button>
+                                <input type="file" id="importFile" accept=".json,.md,.html" onchange="importSnippets(event)" style="display: none">
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </aside>
+
+            <main>
+                <div class="toolbar">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="searchInput" placeholder="Search snippets... (Ctrl+K)" onkeyup="displaySnippets()">
+                    </div>
+                    <select id="languageFilter" onchange="displaySnippets()">
+                        <option value="all">All Languages</option>
+                        <option value="javascript">JavaScript</option>
+                        <option value="python">Python</option>
+                        <option value="html">HTML</option>
+                        <option value="css">CSS</option>
+                        <option value="typescript">TypeScript</option>
+                        <option value="java">Java</option>
+                        <option value="cpp">C++</option>
+                        <option value="rust">Rust</option>
+                    </select>
+                </div>
+
+                <div class="tabs">
+                    <div class="tab active" data-view="all" onclick="switchView('all')">All Snippets</div>
+                    <div class="tab" data-view="favorites" onclick="switchView('favorites')">Favorites</div>
+                    <div class="tab" data-view="recent" onclick="switchView('recent')">Recent</div>
+                    <!-- Remove the shared tab -->
+                    <div class="tab" data-view="archived" onclick="switchView('archived')">Archive</div>
+                </div>
+
+                <div id="snippetsList"></div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-python.min.js"></script>
+    <script src="script.js"></script>
+
+    <!-- Move modal inside body tag -->
+    <div id="fullScreenEditor" class="modal editor-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>New Snippet</h2>
+                <button class="btn btn-icon close-modal" onclick="closeFullScreenEditor()">✕</button>
+            </div>
+            <div class="editor-form">
+                <div class="editor-toolbar">
+                    <div class="left-controls">
+                        <input type="text" id="modalSnippetTitle" placeholder="Enter title" required>
+                        <select id="modalSnippetLanguage">
+                            <option value="javascript">JavaScript</option>
+                            <option value="python">Python</option>
+                            <option value="html">HTML</option>
+                            <option value="css">CSS</option>
+                            <option value="typescript">TypeScript</option>
+                            <option value="java">Java</option>
+                            <option value="cpp">C++</option>
+                            <option value="rust">Rust</option>
+                        </select>
+                        <input type="text" id="modalSnippetTags" placeholder="Tags (comma-separated)">
+                    </div>
+                    <div class="right-controls">
+                        <button class="btn btn-icon" id="modalFormatCode" title="Format Code">
+                            <svg width="16" height="16" viewBox="0 0 16 16">
+                                <path fill="currentColor" d="M4.5 3h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1zm0 3h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1zm0 3h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1z"/>
+                            </svg>
+                        </button>
+                        <button class="btn btn-primary" onclick="saveSnippetFromModal()">Save Snippet</button>
+                    </div>
+                </div>
+                <div class="full-editor-container">
+                    <div class="line-numbers" id="modalLineNumbers"></div>
+                    <textarea id="modalSnippetCode" placeholder="// Your code here" required></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
